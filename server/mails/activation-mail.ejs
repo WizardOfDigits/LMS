@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Activation Mail</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+  <body>
+    <div class="email-wrapper">
+      <div>
+        <h1>Welcome to LMS</h1>
+      </div>
+      <div class="email-body">
+        <p>Hello <%= user.name %>,</p>
+        <p>Thank you for registering with ELearning. To activate your account, Please use the following activation code:</p>
+        <h2><%= activationCode %></h2>
+        <p>Please enter this code on the activation page within the next 5 minute</p>
+        <p>If you did not register for a LMS account,Please ignore this email</p>
+      </div>
+      <div class="email-footer">
+        <p>If you have any questions, Please don't hesitate to contact us at <a href="mailto:suppoer@LMS.com">O7l5o@example.com</a></p>
+      </div>
+    </div>
+  </body>
+</html>
