@@ -8,6 +8,8 @@ import {
   getUserInfo,
   socialAuth,
   updateUserInfo,
+  updatePassword,
+  updateProfileAvatar,
 } from "../controllers/user.controller";
 import { authorizeRoles, isAuthenticated } from "../middleware/auth";
 
@@ -19,6 +21,8 @@ userRouter.post("/socialAuth", socialAuth);
 userRouter.post("/logout", isAuthenticated, logoutUser);
 userRouter.get("/refresh", updateAccessToken);
 userRouter.get("/info", isAuthenticated, getUserInfo);
-userRouter.post("/update-user-info", isAuthenticated, updateUserInfo);
+userRouter.put("/update-user-info", isAuthenticated, updateUserInfo);
+userRouter.put("/update-user-password", isAuthenticated, updatePassword);
+userRouter.put("/update-user-avatar", isAuthenticated, updateProfileAvatar);
 
 export default userRouter;
