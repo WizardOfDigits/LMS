@@ -15,6 +15,7 @@ import {
 } from "../utils/jwt";
 import { redis } from "../utils/redis";
 import { getUserById } from "../services/user.service";
+import cloudinary from "cloudinary";
 
 // Register user
 interface IRegistrationBody {
@@ -224,6 +225,7 @@ export const updateAccessToken = CatchAsyncError(
         { expiresIn: "7d" },
       );
 
+      req.user = user;
       res.cookie("access_token", accessToken, accessTokenOptions);
       res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
@@ -312,6 +314,106 @@ export const updateUserInfo = CatchAsyncError(
       await redis.set(userId, JSON.stringify(user));
       res.status(201).json({
         success: true,
+        user,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        return next(new ErrorHandler(error.message, 400));
+      }
+      return next(new ErrorHandler("An unknown error occurred", 500));
+    }
+  },
+);
+
+// update user password
+interface IUpdatePassword {
+  oldPassword: string;
+  newPassword: string;
+}
+export const updatePassword = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { oldPassword, newPassword } = req.body as IUpdatePassword;
+
+      if (!oldPassword || !newPassword) {
+        return next(new ErrorHandler("Please enter old and new password", 400));
+      }
+
+      const user = await userModel.findById(req.user?._id).select("+password");
+
+      if (user?.password === undefined) {
+        return next(new ErrorHandler("Invalid user", 400));
+      }
+
+      const isPasswordMatch = await user?.comparePassword(oldPassword);
+
+      if (!isPasswordMatch) {
+        return next(new ErrorHandler("Invalid old dPassword", 400));
+      }
+      user.password = newPassword;
+      await user.save();
+      await redis.set(req.user?._id, JSON.stringify(user));
+      res.status(201).json({
+        success: true,
+        user,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        return next(new ErrorHandler(error.message, 400));
+      }
+      return next(new ErrorHandler("An unknown error occurred", 500));
+    }
+  },
+);
+
+// update profile avatar
+interface IUpdateProfileAvatar {
+  avatar: string;
+}
+export const updateProfileAvatar = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { avatar } = req.body as IUpdateProfileAvatar;
+
+      const userId = req?.user?._id;
+
+      const user = await userModel.findById(userId);
+
+      if (avatar && user) {
+        // if user have one avatar then call this if
+        if (user?.avatar?.public_id) {
+          // first delete the old avatar
+          await cloudinary.v2.uploader.destroy(user?.avatar?.public_id);
+
+          const MyCloudinaryAvatar = await cloudinary.v2.uploader.upload(
+            avatar,
+            {
+              folder: "avatar",
+              width: 150,
+            },
+          );
+          user.avatar = {
+            public_id: MyCloudinaryAvatar.public_id,
+            url: MyCloudinaryAvatar.secure_url,
+          };
+        } else {
+          const MyCloudinaryAvatar = await cloudinary.v2.uploader.upload(
+            avatar,
+            {
+              folder: "avatar",
+              width: 150,
+            },
+          );
+          user.avatar = {
+            public_id: MyCloudinaryAvatar.public_id,
+            url: MyCloudinaryAvatar.secure_url,
+          };
+        }
+      }
+      await user?.save();
+      await redis.set(userId, JSON.stringify(user));
+      res.status(200).json({
+        sucess: true,
         user,
       });
     } catch (error) {
