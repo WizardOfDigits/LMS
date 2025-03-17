@@ -28,7 +28,7 @@ interface IRegistrationBody {
 export const registrationUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name, email, password, avatar } = req.body;
+      const { name, email, password } = req.body;
       const isEmailExist = await userModel.findOne({ email });
       if (isEmailExist) {
         return next(new ErrorHandler("Email already exists", 400));
@@ -47,7 +47,7 @@ export const registrationUser = CatchAsyncError(
 
       // Render email template
       const html = await ejs.renderFile(
-        path.join(__dirname, "../mails/activation-mail.ejs"), // Ensure correct path here
+        path.join(__dirname, "../mails/activation-mail.ejs"),
         data,
       );
       // Send email logic here
@@ -64,7 +64,7 @@ export const registrationUser = CatchAsyncError(
       });
     } catch (error) {
       if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400)); // Properly typed error
+        return next(new ErrorHandler(error.message, 400));
       }
       return next(new ErrorHandler("Something went wrong", 500)); // Fallback if error isn't an instance of Error
     }
