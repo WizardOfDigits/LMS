@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
+import { IUser } from "./user.model";
 
 // Interface for Course schema, defining the structure of a course document.
 interface ICourse extends Document {
@@ -29,22 +30,22 @@ interface ICourseData extends Document {
   videoPlayer: string;
   links: ILink[];
   suggestion: string;
-  question: IComment[];
+  questions: IComment[];
 }
 
 // Interface for user comments on courses and video sections.
 interface IComment extends Document {
-  user: object;
-  comment: string;
-  commentReplies?: IComment[];
+  user: IUser;
+  question: string;
+  questionReplies?: IComment[];
 }
 
 // Interface for course reviews
 interface IReview extends Document {
-  user: object;
+  user: IUser;
   rating: number;
   comment: string;
-  commentReplies: IComment[];
+  commentReplies?: IComment[];
 }
 
 // Interface for external resource links related to course materials
@@ -61,6 +62,7 @@ const reviewSchema = new Schema<IReview>({
     default: 0,
   },
   comment: String,
+  commentReplies: [Object],
 });
 
 // Schema for links related to course materials
@@ -72,8 +74,11 @@ const linkSchema = new Schema<ILink>({
 // Schema for user comments on courses and videos
 const commentSchema = new Schema<IComment>({
   user: Object,
-  comment: String,
-  commentReplies: [Object],
+  question: String,
+  questionReplies: {
+    type: [Object],
+    default: [],
+  },
 });
 
 // Schema for course content including videos, descriptions, and additional resources
@@ -85,7 +90,7 @@ const courseDataSchema = new Schema<ICourseData>({
   videoDuration: Number,
   videoPlayer: String,
   links: [linkSchema],
-  question: [commentSchema],
+  questions: [commentSchema],
   suggestion: String,
 });
 
