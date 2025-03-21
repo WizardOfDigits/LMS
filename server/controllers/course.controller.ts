@@ -27,10 +27,9 @@ export const uploadCourse = CatchAsyncError(
       }
       createCourse(data, res, next);
     } catch (error) {
-      if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
-      return next(new ErrorHandler("An unknown error occurred", 500));
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
@@ -59,10 +58,9 @@ export const editCourse = CatchAsyncError(
       );
       res.status(201).json({ success: true, course });
     } catch (error) {
-      if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
-      return next(new ErrorHandler("An unknown error occurred", 500));
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
@@ -89,10 +87,9 @@ export const getSingleCourse = CatchAsyncError(
         res.status(200).json({ success: true, course });
       }
     } catch (error) {
-      if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
-      return next(new ErrorHandler("An unknown error occurred", 500));
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
@@ -118,10 +115,9 @@ export const getAllCourses = CatchAsyncError(
         res.status(200).json({ success: true, courses });
       }
     } catch (error) {
-      if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
-      return next(new ErrorHandler("An unknown error occurred", 500));
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
@@ -151,10 +147,9 @@ export const getCourseByUser = CatchAsyncError(
         content,
       });
     } catch (error) {
-      if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
-      return next(new ErrorHandler("An unknown error occurred", 500));
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
@@ -203,10 +198,9 @@ export const addQuestion = CatchAsyncError(
         course,
       });
     } catch (error) {
-      if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
-      return next(new ErrorHandler("An unknown error occurred", 500));
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
@@ -287,10 +281,9 @@ export const addAnswer = CatchAsyncError(
         course,
       });
     } catch (error) {
-      if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
-      return next(new ErrorHandler("An unknown error occurred", 500));
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
@@ -350,10 +343,9 @@ export const addReview = CatchAsyncError(
         course,
       });
     } catch (error) {
-      if (error instanceof Error) {
-        return next(new ErrorHandler(error.message, 400));
-      }
-      return next(new ErrorHandler("An unknown error occurred", 500));
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
