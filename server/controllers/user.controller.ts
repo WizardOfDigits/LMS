@@ -246,7 +246,11 @@ export const updateAccessToken = CatchAsyncError(
 export const getUserInfo = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user._id;
+      if (!req.user || !req.user._id) {
+        return next(new ErrorHandler("User not authenticated", 401));
+      }
+
+      const userId = req.user._id as string;
       getUserById(userId, res);
     } catch (error) {
       if (error instanceof Error) {
@@ -297,7 +301,7 @@ export const updateUserInfo = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { name, email } = req.body as IUpdateUserInfo;
-      const userId = req.user?._id;
+      const userId = req.user?._id as string;
       const user = await userModel.findById(userId);
 
       if (email && user) {
@@ -330,6 +334,7 @@ interface IUpdatePassword {
   oldPassword: string;
   newPassword: string;
 }
+
 export const updatePassword = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -339,20 +344,29 @@ export const updatePassword = CatchAsyncError(
         return next(new ErrorHandler("Please enter old and new password", 400));
       }
 
-      const user = await userModel.findById(req.user?._id).select("+password");
+      const userId = req.user?._id as string;
 
-      if (user?.password === undefined) {
+      if (!userId) {
+        return next(new ErrorHandler("User not authenticated", 401));
+      }
+
+      const user = await userModel.findById(userId).select("+password");
+
+      if (!user || user.password === undefined) {
         return next(new ErrorHandler("Invalid user", 400));
       }
 
-      const isPasswordMatch = await user?.comparePassword(oldPassword);
-
+      const isPasswordMatch = await user.comparePassword(oldPassword);
       if (!isPasswordMatch) {
-        return next(new ErrorHandler("Invalid old dPassword", 400));
+        return next(new ErrorHandler("Invalid old password", 400));
       }
+
       user.password = newPassword;
       await user.save();
-      await redis.set(req.user?._id, JSON.stringify(user));
+
+      // Ensure userId is a valid string before passing to Redis
+      await redis.set(userId.toString(), JSON.stringify(user));
+
       res.status(201).json({
         success: true,
         user,
@@ -370,50 +384,52 @@ export const updatePassword = CatchAsyncError(
 interface IUpdateProfileAvatar {
   avatar: string;
 }
+
 export const updateProfileAvatar = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { avatar } = req.body as IUpdateProfileAvatar;
+      const userId = req?.user?._id as string;
 
-      const userId = req?.user?._id;
+      if (!userId) {
+        return next(new ErrorHandler("User not authenticated", 401));
+      }
 
       const user = await userModel.findById(userId);
-
-      if (avatar && user) {
-        // if user have one avatar then call this if
-        if (user?.avatar?.public_id) {
-          // first delete the old avatar
-          await cloudinary.v2.uploader.destroy(user?.avatar?.public_id);
-
-          const MyCloudinaryAvatar = await cloudinary.v2.uploader.upload(
-            avatar,
-            {
-              folder: "avatar",
-              width: 150,
-            },
-          );
-          user.avatar = {
-            public_id: MyCloudinaryAvatar.public_id,
-            url: MyCloudinaryAvatar.secure_url,
-          };
-        } else {
-          const MyCloudinaryAvatar = await cloudinary.v2.uploader.upload(
-            avatar,
-            {
-              folder: "avatar",
-              width: 150,
-            },
-          );
-          user.avatar = {
-            public_id: MyCloudinaryAvatar.public_id,
-            url: MyCloudinaryAvatar.secure_url,
-          };
-        }
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
       }
-      await user?.save();
-      await redis.set(userId, JSON.stringify(user));
+
+      if (avatar) {
+        // Check if the user already has an avatar
+        if (user.avatar?.public_id) {
+          const publicId = user.avatar.public_id as string;
+
+          if (publicId) {
+            await cloudinary.v2.uploader.destroy(publicId);
+          }
+        }
+
+        // Upload new avatar
+        const MyCloudinaryAvatar = await cloudinary.v2.uploader.upload(avatar, {
+          folder: "avatar",
+          width: 150,
+        });
+
+        // Update the user's avatar
+        user.avatar = {
+          public_id: MyCloudinaryAvatar.public_id,
+          url: MyCloudinaryAvatar.secure_url,
+        };
+      }
+
+      await user.save();
+
+      // Ensure `userId` is a string before passing it to Redis
+      await redis.set(userId.toString(), JSON.stringify(user));
+
       res.status(200).json({
-        sucess: true,
+        success: true,
         user,
       });
     } catch (error) {
