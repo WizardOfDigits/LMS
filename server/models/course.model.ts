@@ -3,6 +3,7 @@ import { IUser } from "./user.model";
 
 // Interface for Course schema, defining the structure of a course document.
 interface ICourse extends Document {
+  _id: string;
   name: string;
   description: string;
   price: number;
@@ -16,7 +17,7 @@ interface ICourse extends Document {
   reviews: IReview[];
   courseData: ICourseData[];
   ratings?: number;
-  purchaseCount?: number;
+  purchaseCount: number;
 }
 
 // Interface for course content such as videos, descriptions, and extra materials.
