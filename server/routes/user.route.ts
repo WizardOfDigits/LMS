@@ -10,6 +10,7 @@ import {
   updateUserInfo,
   updatePassword,
   updateProfileAvatar,
+  getAllUsers,
 } from "../controllers/user.controller";
 import { authorizeRoles, isAuthenticated } from "../middleware/auth";
 
@@ -24,5 +25,11 @@ userRouter.get("/info", isAuthenticated, getUserInfo);
 userRouter.put("/update-user-info", isAuthenticated, updateUserInfo);
 userRouter.put("/update-user-password", isAuthenticated, updatePassword);
 userRouter.put("/update-user-avatar", isAuthenticated, updateProfileAvatar);
+userRouter.get(
+  "/get-users",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  getAllUsers,
+);
 
 export default userRouter;

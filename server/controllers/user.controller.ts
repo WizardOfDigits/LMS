@@ -14,7 +14,7 @@ import {
   sendToken,
 } from "../utils/jwt";
 import { redis } from "../utils/redis";
-import { getUserById } from "../services/user.service";
+import { getAllUsersService, getUserById } from "../services/user.service";
 import cloudinary from "cloudinary";
 
 // Register user
@@ -437,6 +437,19 @@ export const updateProfileAvatar = CatchAsyncError(
         return next(new ErrorHandler(error.message, 400));
       }
       return next(new ErrorHandler("An unknown error occurred", 500));
+    }
+  },
+);
+
+// Get all users -- only for admin
+export const getAllUsers = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllUsersService(res);
+    } catch (error) {
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
     }
   },
 );
