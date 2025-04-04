@@ -3,12 +3,13 @@ import { NextFunction, Request, Response } from "express";
 import { CatchAsyncError } from "../middleware/catchAsyncError";
 import ErrorHandler from "../utils/ErrorHandler";
 import cloudinary from "cloudinary";
-import { createCourse } from "../services/course.service";
+import { createCourse, getAllCoursesService } from "../services/course.service";
 import CourseModel from "../models/course.model";
 import mongoose from "mongoose";
 import ejs from "ejs";
 import path from "path";
 import sendMail from "../utils/sendMail";
+import NotificationModel from "../models/notification.model";
 
 // upload course
 export const uploadCourse = CatchAsyncError(
@@ -190,6 +191,13 @@ export const addQuestion = CatchAsyncError(
       // add this question to our course content
       courseContent.questions.push(newQuestion);
 
+      // create notification when quetion is added
+      await NotificationModel.create({
+        user: req.user?._id,
+        title: "New Question Received",
+        message: `You have new question in ${courseContent.title}`,
+      });
+
       // save the updated course
       await course?.save();
 
@@ -257,7 +265,12 @@ export const addAnswer = CatchAsyncError(
       await course?.save();
 
       if (req.user?._id === question.user?._id) {
-        // create a new notification object
+        // create notification when answer is added
+        await NotificationModel.create({
+          user: req.user?._id,
+          title: "New Answer Received",
+          message: `You have new answer in ${courseContent.title}`,
+        });
       } else {
         const data = {
           name: question.user.name,
@@ -391,6 +404,19 @@ export const addReplyToReview = CatchAsyncError(
         success: true,
         course,
       });
+    } catch (error) {
+      return next(
+        error instanceof Error ? new ErrorHandler(error.message, 400) : error,
+      );
+    }
+  },
+);
+
+// Get all Coures --only for admin
+export const getAllUsers = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllCoursesService(res);
     } catch (error) {
       return next(
         error instanceof Error ? new ErrorHandler(error.message, 400) : error,

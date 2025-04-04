@@ -9,6 +9,7 @@ import {
   addAnswer,
   addReview,
   addReplyToReview,
+  getAllUsers,
 } from "../controllers/course.controller";
 import { authorizeRoles, isAuthenticated } from "../middleware/auth";
 
@@ -54,6 +55,14 @@ courseRouter.put(
   isAuthenticated,
   authorizeRoles("admin"),
   addReplyToReview,
+);
+
+// create course
+courseRouter.put(
+  "/get-courses",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  getAllCourses,
 );
 
 export default courseRouter;
