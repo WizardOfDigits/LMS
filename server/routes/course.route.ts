@@ -9,10 +9,9 @@ import {
   addAnswer,
   addReview,
   addReplyToReview,
-  getAllUsers,
+  deleteCourse,
 } from "../controllers/course.controller";
 import { authorizeRoles, isAuthenticated } from "../middleware/auth";
-
 const courseRouter = express.Router();
 
 // create course
@@ -65,4 +64,11 @@ courseRouter.put(
   getAllCourses,
 );
 
+// delete course by id (admin only route)
+courseRouter.delete(
+  "/delete-course/:id",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  deleteCourse,
+);
 export default courseRouter;
