@@ -96,58 +96,61 @@ const courseDataSchema = new Schema<ICourseData>({
 });
 
 // Main Course schema defining the structure of a course document in MongoDB
-const courseSchema = new Schema<ICourse>({
-  name: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  estimatedPrice: {
-    type: Number,
-    required: false,
-  },
-  thumbnail: {
-    public_id: {
-      // required: true,
+const courseSchema = new Schema<ICourse>(
+  {
+    name: {
       type: String,
+      required: true,
     },
-    url: {
-      // required: true,
+    description: {
       type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    estimatedPrice: {
+      type: Number,
+      required: false,
+    },
+    thumbnail: {
+      public_id: {
+        // required: true,
+        type: String,
+      },
+      url: {
+        // required: true,
+        type: String,
+      },
+    },
+    tags: {
+      type: String,
+      required: true,
+    },
+    level: {
+      type: String,
+      required: true,
+    },
+    demoUrl: {
+      type: String,
+      required: true,
+    },
+    benefits: [{ title: String }],
+    prerequisites: [{ title: String }],
+    reviews: [reviewSchema],
+    courseData: [courseDataSchema],
+    ratings: {
+      type: Number,
+      default: 0,
+    },
+    purchaseCount: {
+      type: Number,
+      default: 0,
     },
   },
-  tags: {
-    type: String,
-    required: true,
-  },
-  level: {
-    type: String,
-    required: true,
-  },
-  demoUrl: {
-    type: String,
-    required: true,
-  },
-  benefits: [{ title: String }],
-  prerequisites: [{ title: String }],
-  reviews: [reviewSchema],
-  courseData: [courseDataSchema],
-  ratings: {
-    type: Number,
-    default: 0,
-  },
-  purchaseCount: {
-    type: Number,
-    default: 0,
-  },
-});
+  { timestamps: true },
+);
 
 // Create the Course model
 const CourseModel: Model<ICourse> = mongoose.model("Course", courseSchema);
